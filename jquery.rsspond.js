@@ -1,3 +1,9 @@
+/**
+ * Rsspond RSS Feed Plugin
+ * Version 1.0
+ * Author: Brian Kelley
+**/
+
 (function ($) {
 
     var Rsspond, defaultOptions, __bind;
@@ -9,14 +15,11 @@
     };
 
     defaultOptions = {
-        url: '', 
-        author: true,    
-        desc: true,
-        date: true,
+        url: '',
         newWindow: true,        
         maxCount: 5,
         dateFormat: '',
-        itemTemplate: '<li href="{{link}}"><img src="{{image}}" /></li>'
+        itemTemplate: '<li><h3>{{title}}</h3><h4>{{creator}}</h4><h6>{{date}}</h6><p>{{description}}</p><a href="{{link}}">Read More</a></li>'
     };
 
     Rsspond = (function (options) {
@@ -24,9 +27,6 @@
         function Rsspond(handler, options) {
             // Trigger Element
             this.handler = handler;
-
-            // Plugin Variables
-            this.entries = [];
 
             // Extend default options.
             $.extend(true, this, defaultOptions, options);
@@ -39,12 +39,8 @@
             this.update = __bind(this.update, this);
 
             // Init.
-            this.createContainer();
+            // this.splitTemplate();
             this.callFeed();
-        };
-
-        Rsspond.prototype.createContainer = function () {
-            $(this.handler) ? $(this.containerTemplate).appendTo($(this.handler)) : false;
         };
 
         Rsspond.prototype.callFeed = function ( ) {
@@ -54,68 +50,119 @@
                 url: self.feedUrl,
                 dataType: "json",
                 success: function (data) {
-                    // Store entries for local use
                     self.loopEntries( data.query.results.rss );
-
-                    self.createItems();
-                    // console.log(data);
                 }
             });
         };
 
         Rsspond.prototype.loopEntries = function ( list ) {
-            var self = this;
+            var self = this,
+                outputString;
 
             $.each( list, function (i, entry) {
-                console.log(entry.channel.item);
+                var d = entry.channel.item;
+                    itemOutput = self.itemTemplate;
 
-                // self.returnEntries(prop, entry.channel.item);
-
-                self.createItems( entry.channel.item );
-            });
-        };
-
-        Rsspond.prototype.returnEntries = function ( prop, obj ) {
-
-            // if ( this.items !== [] ) {
-                // $.each( this.entries, function (i, itm) {
-                //     console.log(itm);
-                //     console.log(i);
-                // });
-
-                // for (int i = 0; i < entries.length; i++) {
-                //     entries[i] = new Entries();
-
-                //     console.log(entries);
-                // }
-                     
-        };
-
-        Rsspond.prototype.stripTags = function ( value ) {
-            
-        };
-
-        Rsspond.prototype.createItems = function ( data ) {
-            var item = {},
-                output,
-                pattern = /(?:\{{2})([\w\[\]\.]+)(?:\}{2})/;
+                outputString = self.makeTemplate( itemOutput, d);   
                 
-                output = this.itemTemplate;
-
-                console.log("pattern " + pattern);
-                console.log("output " + output);
-
-            $.each( data, function (key, value) {
-                console.log(key);
-                console.log(value);
+                // Output to DOM
+                $(self.handler).prepend(outputString);
             });
-          
 
-            // return output;
         };
 
-        Rsspond.prototype.getObjectProperty = function (  ) {
-           
+        Rsspond.prototype.formatDate = function ( date ) {
+            var postDate = new Date( date ),
+                dateFormat = this.dateFormat,
+                monthArr = [],
+                year, month, day, time;
+
+            monthArr.push("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
+
+            year = postDate.getFullYear().toString();
+            month = postDate.getMonth();
+            day = postDate.getDate();
+            time = postDate.getHours().toString() + ":" + postDate.getMinutes().toString();
+
+            console.log(time);
+
+            if ( dateFormat.indexOf("yy") ) {
+                cutYear = year.substring(2);
+
+                console.log(cutYear);
+            }
+
+
+
+                // switch ( this.dateFormat.toLowerCase().indexOf("d") )
+
+                //MM DD YYYY
+
+                //yy = 99
+                //YY = 1999
+                //m = 'january' | 'february' | 'march' | 'april' | 'may' | 'june' | 'july' | 'august' | 'september' | 'october' | 'november' | 'december' 
+                //M = 'jan' | 'feb' | 'mar' | 'apr' | 'may' | 'jun' | 'jul' | 'aug' | 'sep' | 'sept' | 'oct' | 'nov' | 'dec'
+                //mm = "0", "04", "7", "12"
+                //MM = "00", "04", "07", "12"
+                //dd = "7th", "22nd", "31"
+                //DD = "07", "31"
+
+
+            // var d = postDate.getDate();
+            // var m =  postDate.getMonth();
+            // m += 1;  // JavaScript months are 0-11
+            // var y = postDate.getFullYear();
+
+
+            // replace the format template
+
+            // console.log(d + "." + m + "." + y);
+        };
+
+        Rsspond.prototype.makeTemplate = function(template, data) {
+            var self = this,
+                output, pattern, ref, varName, varValue, newDesc;
+            
+            pattern = /(?:\{{2})([\w\[\]\.]+)(?:\}{2})/;
+            output = template;
+
+          while (pattern.test(output)) {
+            varName = output.match(pattern)[1];
+            varValue = (ref = this.getObjectProperty(data, varName)) != null ? ref : '';
+
+            if (varName == 'date' && self.dateFormat !== '') {
+                self.formatDate( varValue );
+            }
+
+            if (varName == 'description' && varValue.length > 1) {
+                var newValue = varValue[1];
+
+                varValue = newValue;
+            }
+
+            output = output.replace(pattern, function() {
+              return "" + varValue;
+            });
+          }
+          
+          return output;
+        };
+
+        Rsspond.prototype.getObjectProperty = function(object, property) {
+            var piece, pieces;
+            property = property.replace(/\[(\w+)\]/g, '.$1');
+            pieces = property.split('.');
+
+            while (pieces.length) {
+                piece = pieces.shift();
+
+                if ((object != null) && piece in object) {
+                  object = object[piece];
+                } else {
+                return null;
+            }
+          }
+          return object;
         };
 
         // Update options
