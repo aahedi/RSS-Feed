@@ -19,6 +19,8 @@
         newWindow: true,        
         maxCount: 5,
         dateFormat: '',
+        periodDay: 'am',
+        periodNight: 'pm',
         itemTemplate: '<li><h3>{{title}}</h3><h4>{{creator}}</h4><h6>{{date}}</h6><p>{{description}}</p><a href="{{link}}">Read More</a></li>'
     };
 
@@ -31,6 +33,10 @@
             // Extend default options.
             $.extend(true, this, defaultOptions, options);
 
+            // Plugin Variables
+            this.months = [];
+            this.itemTemplate = this.newWindow ? this.itemTemplate.replace("<a", "<a target='_blank'") : this.itemTemplate;
+
             // Extended Variables
             this.query = 'SELECT channel.item FROM feednormalizer WHERE output="rss_2.0" AND url ="' + this.url + '" LIMIT ' + this.maxCount;
             this.feedUrl = "https://query.yahooapis.com/v1/public/yql?q=" + encodeURIComponent(this.query) + "&format=json&diagnostics=false&callback=?";
@@ -39,7 +45,6 @@
             this.update = __bind(this.update, this);
 
             // Init.
-            // this.splitTemplate();
             this.callFeed();
         };
 
@@ -63,6 +68,8 @@
                 var d = entry.channel.item;
                     itemOutput = self.itemTemplate;
 
+                console.log(d);
+
                 outputString = self.makeTemplate( itemOutput, d);   
                 
                 // Output to DOM
@@ -71,48 +78,132 @@
 
         };
 
+        Rsspond.prototype.getOrdinal = function ( number ) {
+            var suffix = ["th","st","nd","rd"],
+            
+            v = number % 100;
+
+            return number + ( suffix[ (v-20) % 10 ] || suffix[v] || suffix[0] );
+        };
+
+        // Rsspond.prototype.replaceParam = function ( template, partial, callback ) {
+        //     if ( template.includes( partial ) ) {
+        //         callback();
+        //     }
+        // };
+
         Rsspond.prototype.formatDate = function ( date ) {
             var postDate = new Date( date ),
-                dateFormat = this.dateFormat,
-                monthArr = [],
-                year, month, day, time;
+                dateTemplate = this.dateFormat,
+                year = postDate.getFullYear().toString(),
+                month = postDate.getMonth(),
+                day = postDate.getDate(),
+                hours = postDate.getHours().toString(),
+                minutes = postDate.getMinutes().toString(),
+                period = (hours >= 12) ? this.periodNight : this.periodDay,
+                pattern = new RegExp('[^-\s]'),
+                revDay, revMonth;
 
-            monthArr.push("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
+            console.log(postDate);
 
-            year = postDate.getFullYear().toString();
-            month = postDate.getMonth();
-            day = postDate.getDate();
-            time = postDate.getHours().toString() + ":" + postDate.getMinutes().toString();
+            this.months.push("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
+            
 
-            console.log(time);
+            // if ( dateTemplate.includes("yy") ) {
+            //     console.log("includes yy");
+            //     dateTemplate = dateTemplate.replace("yy", year.substring(2));
 
-            if ( dateFormat.indexOf("yy") ) {
-                cutYear = year.substring(2);
+            //     console.log(dateTemplate);
+                
+            // }
 
-                console.log(cutYear);
+            switch (true) {
+                case /yy/.test(dateTemplate):
+                    dateTemplate = dateTemplate.replace(/yy/, year.substring(2));
+                    
+                case /YY/.test(dateTemplate):
+                    dateTemplate = dateTemplate.replace(/YY/, year);
+
+                case /m/.test(dateTemplate):
+                    revMonth = this.months[month];
+                    dateTemplate = dateTemplate.replace(/m/, revMonth );
+
+                case /dd/.test(dateTemplate):
+                    revDay = this.getOrdinal(day);
+                    dateTemplate = dateTemplate.replace(/dd/, revDay );
+
+                case /DD/.test(dateTemplate):
+
+                    if (day.length <= 1 ) {
+                        revDay = '0' + (revDay + 1).toString();
+                    }
+
+                    dateTemplate = dateTemplate.replace(/DD/, revDay );
+
+                case /tt/.test(dateTemplate):
+                    if (hours > 12) {
+                        hours = hours - 12;
+                    }
+
+                    dateTemplate = dateTemplate.replace(/tt/, hours + ":" + minutes + period);
+
+                
             }
 
+            return dateTemplate;
 
 
-                // switch ( this.dateFormat.toLowerCase().indexOf("d") )
-
-                //MM DD YYYY
-
-                //yy = 99
-                //YY = 1999
-                //m = 'january' | 'february' | 'march' | 'april' | 'may' | 'june' | 'july' | 'august' | 'september' | 'october' | 'november' | 'december' 
-                //M = 'jan' | 'feb' | 'mar' | 'apr' | 'may' | 'jun' | 'jul' | 'aug' | 'sep' | 'sept' | 'oct' | 'nov' | 'dec'
-                //mm = "0", "04", "7", "12"
-                //MM = "00", "04", "07", "12"
-                //dd = "7th", "22nd", "31"
-                //DD = "07", "31"
+            
+            
+            // console.log(time);
 
 
-            // var d = postDate.getDate();
-            // var m =  postDate.getMonth();
-            // m += 1;  // JavaScript months are 0-11
-            // var y = postDate.getFullYear();
+            // if (pattern.test(output)) {
 
+                // Year
+                // if ( output.includes("yy") ) {
+                //     console.log("includes yy");
+                //     value = year.substring(2);
+                // }
+
+                // Month
+                // if ( output.includes("MM") ) {                
+                //     if (month.length <= 1 ) {
+                //         month = '0' + (month + 1).toString();
+                //     }
+                // } else if ( output.includes("mm") ) { 
+                //     month = '0' + (month + 1).toString();                
+                // } else if ( output.includes("m") && !output.includes("mm")) {
+                //     month = this.months[month];
+                // } else if ( output.includes("M") && !output.includes("MM")) {
+                //     month = this.months[month].slice(0,3);
+                // }
+
+                // // Day
+                // if ( output.includes("DD") ) {  
+                //     if (day.length <= 1 ) {
+                //         day = '0' + (day + 1).toString();
+                //     }
+                // } else if ( output.includes("dd") ) {  
+                //     day = this.getOrdinal(day);
+                // }
+
+                // // Time
+                // if ( output.includes("tt") ) {
+
+                //     if (hours > 12) {
+                //         hours = hours - 12;
+                //     }
+                // }
+
+            //     output = output.replace(pattern, function() {
+            //         return "" + value;
+            //     });
+
+            // }
+
+            // return output;
+            
 
             // replace the format template
 
@@ -121,34 +212,40 @@
 
         Rsspond.prototype.makeTemplate = function(template, data) {
             var self = this,
-                output, pattern, ref, varName, varValue, newDesc;
+                output, pattern, ref, key, value;
             
             pattern = /(?:\{{2})([\w\[\]\.]+)(?:\}{2})/;
             output = template;
 
-          while (pattern.test(output)) {
-            varName = output.match(pattern)[1];
-            varValue = (ref = this.getObjectProperty(data, varName)) != null ? ref : '';
+            while (pattern.test(output)) {
+                key = output.match(pattern)[1];
+                value = (ref = this.getObjectProperty(data, key)) != null ? ref : '';
 
-            if (varName == 'date' && self.dateFormat !== '') {
-                self.formatDate( varValue );
+                if (key == 'date' && self.dateFormat !== '') {
+                    self.formatDate( value );
+                }
+
+                if (key == 'description' && value.length > 1) {
+                    var newValue = value[1];
+
+                    value = newValue;
+                }
+
+                if (key == 'link' && value.length > 1) {
+                    var newValue = value[0];
+
+                    value = newValue;
+                }
+
+                output = output.replace(pattern, function() {
+                    return "" + value;
+                });
             }
 
-            if (varName == 'description' && varValue.length > 1) {
-                var newValue = varValue[1];
-
-                varValue = newValue;
-            }
-
-            output = output.replace(pattern, function() {
-              return "" + varValue;
-            });
-          }
-          
-          return output;
+            return output;
         };
 
-        Rsspond.prototype.getObjectProperty = function(object, property) {
+        Rsspond.prototype.getObjectProperty = function( object, property ) {
             var piece, pieces;
             property = property.replace(/\[(\w+)\]/g, '.$1');
             pieces = property.split('.');
