@@ -24,6 +24,7 @@
         dateFormat: 'm dd, YY tt',
         periodDay: 'am',
         periodNight: 'pm',
+        errorText: 'An error occurred loading the feed.',
         itemTemplate: '<li><h3>{{title}}</h3><h4>{{creator}}</h4><h6>{{date}}</h6><p>{{description}}</p><a href="{{link}}">Read More</a></li>'
     };
 
@@ -41,8 +42,8 @@
             this.itemTemplate = this.newWindow ? this.itemTemplate.replace("<a", "<a target='_blank'") : this.itemTemplate;
 
             // Extended Variables
-            this.query = 'SELECT channel.item FROM feednormalizer WHERE output="rss_2.0" AND url ="' + this.url + '" LIMIT ' + this.maxCount;
-            this.feedUrl = "https://query.yahooapis.com/v1/public/yql?q=" + encodeURIComponent(this.query) + "&format=json&diagnostics=false&callback=?";
+            this.query = this.localFeed ? '' : 'SELECT channel.item FROM feednormalizer WHERE output="rss_2.0" AND url ="' + this.url + '" LIMIT ' + this.maxCount;
+            this.feedUrl = this.localFeed ? this.url : 'https://query.yahooapis.com/v1/public/yql?q=' + encodeURIComponent(this.query) + '&format=json&diagnostics=false&callback=?';
 
             // Bind methods.
             this.update = __bind(this.update, this);
@@ -57,10 +58,31 @@
             $.ajax({
                 url: self.feedUrl,
                 dataType: "json",
+                timeout: 5000,
                 success: function (data) {
                     self.loopEntries( data.query.results.rss );
+                },
+                error: function () {
+                    $(self.handler).prepend(self.errorText);
                 }
             });
+//     var rssurl = 'sample-feed.xml';
+
+// $.get(rssurl, function(data) {
+//     var $xml = $(data);
+//     $xml.find("item").each(function() {
+//         var $this = $(this),
+//             item = {
+//                 title: $this.find("title").text(),
+//                 link: $this.find("link").text(),
+//                 description: $this.find("description").text(),
+//                 pubDate: $this.find("pubDate").text(),
+//                 author: $this.find("author").text()
+//         }
+//         //Do something with item here...
+//         console.log(item.title);
+//     });
+// });
         };
 
         Rsspond.prototype.loopEntries = function ( list ) {
@@ -70,8 +92,6 @@
             $.each( list, function (i, entry) {
                 var d = entry.channel.item;
                     itemOutput = self.itemTemplate;
-
-                console.log(d);
 
                 outputString = self.replaceTemplate( itemOutput, d);   
                 
@@ -196,7 +216,6 @@
 
             while (pattern.test(output)) {
                 key = output.match(pattern)[1];
-
                 value = (ref = this.getObjectProperty(data, key)) != null ? ref : '';
 
                 if (key == 'date' && self.dateFormat !== '') {
@@ -239,12 +258,12 @@
                 if ((object != null) && piece in object) {
                   object = object[piece];
                 } else {
-                return null;
+                    return null;
+                }
             }
-          }
-
-          return object;
         };
+
+
 
         // Update options
         Rsspond.prototype.update = function ( options ) {
