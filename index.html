@@ -1,8 +1,7 @@
 <html>
 <head>
 	<title></title>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
-	<script type="text/javascript" src="/jquery.rsspond.js"></script>
+	<script type="text/javascript" src="rsspond.js"></script>
 </head>
 <body>
 	<ul class="js-rsspond">
@@ -11,10 +10,12 @@
 
 
 	<script>
-		$('.js-rsspond').rsspond({
+		var feed = new Rsspond({
 			url: 'http://rss.nytimes.com/services/xml/rss/nyt/InternationalHome.xml',
 			dateFormat: 'M dd, yy TT'
 		});
+
+		feed.init();
 	</script>
 
 </body>

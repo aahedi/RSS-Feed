@@ -18,6 +18,7 @@
     };
 
     defaultOptions = {
+        target: '.js-rsspond',
         url: '',
         newWindow: true,        
         maxCount: 5,
