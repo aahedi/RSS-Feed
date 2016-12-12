@@ -16,7 +16,8 @@ Include the script in your HTML file, and call each iteration as such:
 
 ```
 var feed = new Rsspond({
-	url: 'http://yourfeedurl.com'
+	url: 'http://yourfeedurl.com',
+	itemTemplate: '<h3>{{title}}</h3><h4>{{creator}}</h4><p>{{description}}</p><a href="{{link}}">Read Full Story</a>'
 });
 
 feed.init();
