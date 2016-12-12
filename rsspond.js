@@ -5,6 +5,7 @@
  * Tested with:
  * http://rss.nytimes.com/services/xml/rss/nyt/InternationalHome.xml
  * http://jquery-plugins.net/rss
+ * http://rss.cnn.com/rss/cnn_topstories.rss
 **/
 
 (function() {
@@ -23,8 +24,8 @@
                 periodNight: 'pm',
                 itemTemplate: '<li><h3>{{title}}</h3><h4>{{creator}}</h4><h6>{{date}}</h6><p>{{description}}</p><a href="{{link}}">Read More</a></li>'
             };
-            // Extend Options
-        
+
+            // Extend Options        
             if (typeof params === 'object') {
                 for (option in params) {
                     value = params[option];
@@ -47,28 +48,27 @@
                 xhr = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"),
                 data;
 
-            console.log(this.feedUrl); 
-
             xhr.open("GET", this.feedUrl, true);
 
             xhr.onload = function() {
-                if (xhr.status == 200) {
+                switch (xhr.status) {
+                    case 200:                  
+                        data = JSON.parse(xhr.responseText);
+                        self.loopEntries( data.query.results.rss );
 
-                    data = JSON.parse(xhr.responseText);
+                        break;
+                    case 400:
+                        console.log('There was an error retrieving the feed.');
 
-                    self.loopEntries( data.query.results.rss );
-                }
-                else if (xhr.status == 400) {
-                    console.log('There was an error retrieving the feed.');
-                }
-                else {
-                    console.log('Your feed was retrieved, but there was an error displaying it.');
+                        break;
+                    default:
+                        console.log('Your feed was retrieved, but there was an error displaying it.');
                 }
             };
 
-            xhr.send();
-
-            console.log(this.handler);
+            if (this.options.url !== '') {
+                xhr.send();
+            }            
         };
 
         Rsspond.prototype.loopEntries = function ( list ) {
@@ -82,9 +82,10 @@
 
                 outputString = self.replaceTemplate( itemOutput, d);   
 
-                console.log(outputString);
+                handler.insertAdjacentHTML( 'beforeend', outputString );
             }
         };
+
 
         Rsspond.prototype.stripTags = function ( el ) {
             var tmp = document.createElement("div");
@@ -94,18 +95,18 @@
         };
 
         Rsspond.prototype.testTemplate = function ( pattern ) {
-            return pattern.test(this.dateFormat);
+            return pattern.test(this.options.dateFormat);
         };
 
         Rsspond.prototype.formatDate = function ( date ) {
             var postDate = new Date( date ),
-                dateTemplate = this.dateFormat,
+                dateTemplate = this.options.dateFormat,
                 year = postDate.getFullYear().toString(),
                 month = postDate.getMonth(),
                 day = postDate.getDate(),
                 hours = postDate.getHours().toString(),
                 minutes = postDate.getMinutes().toString(),
-                period = (hours >= 12) ? this.periodNight : this.periodDay,
+                period = (hours >= 12) ? this.options.periodNight : this.options.periodDay,
                 partial,
                 revDay;
 
@@ -121,6 +122,8 @@
             // // Month
             if ( this.testTemplate(/\bm\b/) ) {
                 dateTemplate = dateTemplate.replace(/\bm\b/, this.months[month] );
+            } else if ( this.testTemplate(/\bMM\b/) ) {
+                dateTemplate = dateTemplate.replace(/\bMM\b/, month + 1);
             } else if ( this.testTemplate(/\bM\b/) ) {
                 dateTemplate = dateTemplate.replace(/\bM\b/, this.months[month].slice(0,3) );
             }
@@ -131,12 +134,19 @@
             } else if ( this.testTemplate(/\bDD\b/) ) {
                 if (day.length <= 1 ) {
                     revDay = '0' + (revDay + 1).toString();
+                } else {
+                    revDay = day.toString();
                 }
 
                 dateTemplate = dateTemplate.replace(/\bDD\b/, revDay );
             }
 
-            // // Time
+            // Time
+
+            if (minutes.length <=1 ) {
+                minutes = '0' + minutes;
+            }
+
             if ( this.testTemplate(/\btt\b/) ) {
                 if (hours > 12) {
                     hours = hours - 12;
