@@ -17,7 +17,8 @@
             this.options = {
                 selector: '.js-rsspond',
                 url: '',
-                newWindow: true,        
+                newWindow: true, 
+                logData: false,       
                 maxCount: 5,
                 dateFormat: 'm dd, YY tt',
                 periodDay: 'am',
@@ -53,7 +54,7 @@
             xhr.onload = function() {
                 switch (xhr.status) {
                     case 200:                  
-                        data = JSON.parse(xhr.responseText);
+                        data = JSON.parse(xhr.responseText);                        
                         self.loopEntries( data.query.results.rss );
 
                         break;
@@ -80,6 +81,8 @@
                 var d = list[i].channel.item;
                     itemOutput = self.itemTemplate;
 
+                self.options.logData ? console.log(d) : false;
+
                 outputString = self.replaceTemplate( itemOutput, d);   
 
                 handler.insertAdjacentHTML( 'beforeend', outputString );
@@ -105,56 +108,59 @@
                 month = postDate.getMonth(),
                 day = postDate.getDate(),
                 hours = postDate.getHours().toString(),
-                minutes = postDate.getMinutes().toString(),
+                minutes = postDate.getMinutes().toString().length <=1 ? '0' + postDate.getMinutes().toString() : postDate.getMinutes().toString(),
                 period = (hours >= 12) ? this.options.periodNight : this.options.periodDay,
                 partial,
                 revDay;
 
             this.months.push("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
 
-            // Year       
-            if ( this.testTemplate(/\byy\b/) ) {
-                dateTemplate = dateTemplate.replace(/\byy\b/, year.substring(2));
-            } else if ( this.testTemplate(/\bYY\b/) ) {
-                dateTemplate = dateTemplate.replace(/\bYY\b/, year);
+            // Year
+            switch(true) {
+                case this.testTemplate(/\byy\b/):
+                    dateTemplate = dateTemplate.replace(/\byy\b/, year.substring(2));
+                    break;
+                case this.testTemplate(/\bYY\b/):
+                    dateTemplate = dateTemplate.replace(/\bYY\b/, year);
+                    break;
             }
 
-            // // Month
-            if ( this.testTemplate(/\bm\b/) ) {
-                dateTemplate = dateTemplate.replace(/\bm\b/, this.months[month] );
-            } else if ( this.testTemplate(/\bMM\b/) ) {
-                dateTemplate = dateTemplate.replace(/\bMM\b/, month + 1);
-            } else if ( this.testTemplate(/\bM\b/) ) {
-                dateTemplate = dateTemplate.replace(/\bM\b/, this.months[month].slice(0,3) );
+            // Month
+            switch(true) {
+                case this.testTemplate(/\bm\b/):
+                    dateTemplate = dateTemplate.replace(/\bm\b/, this.months[month] );
+                    break;
+                case this.testTemplate(/\bMM\b/):
+                    dateTemplate = dateTemplate.replace(/\bMM\b/, month + 1);
+                    break;
+                case this.testTemplate(/\bM\b/):
+                    dateTemplate = dateTemplate.replace(/\bM\b/, this.months[month].slice(0,3) );
+                    break;
             }
 
-            // // Day
-            if ( this.testTemplate(/\bdd\b/) ) {
-                dateTemplate = dateTemplate.replace(/\bdd\b/, this.getOrdinal(day) );
-            } else if ( this.testTemplate(/\bDD\b/) ) {
-                if (day.length <= 1 ) {
-                    revDay = '0' + (revDay + 1).toString();
-                } else {
-                    revDay = day.toString();
-                }
-
-                dateTemplate = dateTemplate.replace(/\bDD\b/, revDay );
+            // Day
+            switch(true) {
+                case this.testTemplate(/\bdd\b/):
+                    dateTemplate = dateTemplate.replace(/\bdd\b/, this.getOrdinal(day) );
+                    break;
+                case this.testTemplate(/\bDD\b/):
+                    day.length <= 1 ? revDay = '0' + (revDay + 1).toString() : revDay = day.toString();
+                    dateTemplate = dateTemplate.replace(/\bDD\b/, revDay );
+                    break;
             }
 
             // Time
+            switch(true) {
+                case this.testTemplate(/\btt\b/):
+                    if (hours > 12) {
+                        hours = hours - 12;
+                    }
 
-            if (minutes.length <=1 ) {
-                minutes = '0' + minutes;
-            }
-
-            if ( this.testTemplate(/\btt\b/) ) {
-                if (hours > 12) {
-                    hours = hours - 12;
-                }
-
-                dateTemplate = dateTemplate.replace(/\btt\b/, hours + ":" + minutes + period);
-            } else if ( this.testTemplate(/\bTT\b/) ) {
-                dateTemplate = dateTemplate.replace(/\bTT\b/, hours + ":" + minutes);
+                    dateTemplate = dateTemplate.replace(/\btt\b/, hours + ":" + minutes + period);
+                    break;
+                case this.testTemplate(/\bTT\b/):
+                    dateTemplate = dateTemplate.replace(/\bTT\b/, hours + ":" + minutes);
+                    break;
             }
 
             return dateTemplate;

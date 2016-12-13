@@ -17,7 +17,7 @@ Include the script in your HTML file, and call each iteration as such:
 ```
 var feed = new Rsspond({
 	url: 'http://yourfeedurl.com',
-	itemTemplate: '<h3>{{title}}</h3><h4>{{creator}}</h4><p>{{description}}</p><a href="{{link}}">Read Full Story</a>'
+	itemTemplate: '<div><h3>{{title}}</h3><h4>{{creator}}</h4><p>{{description}}</p><a href="{{link}}">Read Full Story</a></div>'
 });
 
 feed.init();
@@ -25,17 +25,21 @@ feed.init();
 
 ## Options
 
+#### selector
+
+The element you want to contain all the feed items (default: '.js-rsspond').
+
 #### url
 
-The URL of the feed you're wanting to display.
+Pretty important. The URL of the feed you're wanting to display. 
 
 #### newWindow
 
-If you want your links to open in a new page.
+Boolean value for links to open in a new page (default:true).
 
 #### maxCount
 
-The maximum number of items to display.
+The maximum number of items to display (default: m dd, YY TT).
 
 #### dateFormat
 
@@ -52,6 +56,9 @@ A string format of how you want the nighttime period to display (default: pm).
 #### itemTemplate
 
 A string format of how you want your info to display with markup. Denote each field with handlebars notation, {{key}}.
+
+#### logData
+Boolean value for logging out your data. This is helpful so you can locate fields to put in your template (default: false).
 
 ## Date Formatting
 
@@ -96,4 +103,3 @@ Display the time with period (e.g 11:37pm).
 
 - Local Feed: Bypass the YQL if it's a local file or feed
 - Image Functionality: Finding the image and displaying through the itemTemplate
-- Refactoring: Refactor the time structure to be less verbose
