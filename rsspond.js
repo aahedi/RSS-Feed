@@ -17,6 +17,7 @@
             this.options = {
                 selector: '.js-rsspond',
                 url: '',
+                descLimit: false,
                 newWindow: true, 
                 logData: false,       
                 maxCount: 5,
@@ -54,12 +55,13 @@
             xhr.onload = function() {
                 switch (xhr.status) {
                     case 200:                  
-                        data = JSON.parse(xhr.responseText);                        
-                        self.loopEntries( data.query.results.rss );
+                        data = JSON.parse(xhr.responseText);     
 
+                        data.query.results.rss ? self.loopEntries( data.query.results.rss ) : console.log("No RSS results were found");         
+                        
                         break;
                     case 400:
-                        console.log('There was an error retrieving the feed.');
+                        console.log('There was an error retrieving the RSS feed.');
 
                         break;
                     default:
@@ -89,12 +91,8 @@
             }
         };
 
-
         Rsspond.prototype.stripTags = function ( el ) {
-            var tmp = document.createElement("div");
-            tmp.innerHTML = el;
-
-            return tmp.textContent || tmp.innerText || "";
+            return el.replace(/<[^>]*>?/g, '');
         };
 
         Rsspond.prototype.testTemplate = function ( pattern ) {
@@ -144,7 +142,7 @@
                     dateTemplate = dateTemplate.replace(/\bdd\b/, this.getOrdinal(day) );
                     break;
                 case this.testTemplate(/\bDD\b/):
-                    day.length <= 1 ? revDay = '0' + (revDay + 1).toString() : revDay = day.toString();
+                    revDay = day.length <= 1 ? '0' + (revDay + 1).toString() : day.toString();
                     dateTemplate = dateTemplate.replace(/\bDD\b/, revDay );
                     break;
             }
@@ -168,7 +166,7 @@
 
         Rsspond.prototype.replaceTemplate = function(template, data) {
             var self = this,
-                output, pattern, ref, key, value;
+                output, pattern, ref, key, value, desc, newValue;
             
             pattern = /(?:\{{2})([\w\[\]\.]+)(?:\}{2})/;
             output = template;
@@ -183,20 +181,21 @@
                 }
 
                 if (key == 'description') {
-                    
-                    if ( typeof value == 'object') {
-                        var newValue = value[1];
-                    } else if ( typeof value == 'string' ) {
-                        var newValue = self.stripTags(value);
+                    desc = value;
+
+                    if (typeof value !== 'string') {
+                        desc = self.locateString(value);
+                    }
+
+                    newValue = self.stripTags( desc );     
+
+                    if (self.options.descLimit !== false) {
+                        newValue = newValue.length >= self.options.descLimit ? newValue = newValue.substring(0, self.options.descLimit) + '...' : newValue;
                     }
 
                     value = newValue;
-                }
-
-                if (key == 'link' && typeof value == 'object') {
-                    var newValue = value[0];
-
-                    value = newValue;
+                } else if (typeof value == 'object') {
+                    value = self.locateString(value);
                 }
 
                 output = output.replace(pattern, function() {
@@ -223,6 +222,15 @@
           }
 
           return object;
+        };
+
+        Rsspond.prototype.locateString = function ( arr ) {
+            for (var i = 0; i < arr.length; i++) {
+                if (typeof arr[i] == 'string') {
+                    return arr[i];
+                    break;
+                }
+            }
         };
 
         Rsspond.prototype.getOrdinal = function ( number ) {

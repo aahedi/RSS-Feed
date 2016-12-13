@@ -26,39 +26,44 @@ feed.init();
 ## Options
 
 #### selector
-
-The element you want to contain all the feed items (default: '.js-rsspond').
+###### Type: string
+The element you want to contain all the feed items *(default:'.js-rsspond')*.
 
 #### url
-
+###### Type: string
 Pretty important. The URL of the feed you're wanting to display. 
 
 #### newWindow
-
-Boolean value for links to open in a new page (default:true).
+###### Type: boolean
+Boolean value for links to open in a new page *(default:true)*.
 
 #### maxCount
-
-The maximum number of items to display (default: m dd, YY TT).
+###### Type: string
+The maximum number of items to display *(default: 5)*.
 
 #### dateFormat
-
-A string format of how you want your date to display.
+###### Type: string
+How you want your date to display. See below for more information on date formatting *(default: m dd, YY TT)*.
 
 #### periodDay
-
-A string format of how you want the daytime period to display (default: am).
+###### Type: string
+A string format of how you want the daytime period to display *(default: am)*.
 
 #### periodNight
-
-A string format of how you want the nighttime period to display (default: pm).
+###### Type: string
+A string format of how you want the nighttime period to display *(default: pm)*.
 
 #### itemTemplate
+###### Type: string
+A string format of how you want your info to display with markup. Denote each field with handlebars-like notation, {{key}}.
 
-A string format of how you want your info to display with markup. Denote each field with handlebars notation, {{key}}.
+#### descLimit
+###### Type: boolean/number
+Numeric value if you want to put a character limit on your descriptions. It will succeed the text with three ellipses. *(default: false)*.
 
 #### logData
-Boolean value for logging out your data. This is helpful so you can locate fields to put in your template (default: false).
+###### Type: boolean
+Boolean value for logging out your data. This is helpful so you can locate fields to put in your template *(default: false)*.
 
 ## Date Formatting
 
@@ -102,4 +107,4 @@ Display the time with period (e.g 11:37pm).
 ## Upcoming Changes
 
 - Local Feed: Bypass the YQL if it's a local file or feed
-- Image Functionality: Finding the image and displaying through the itemTemplate
+- Image Functionality: Finding the image if available and displaying through the itemTemplate
