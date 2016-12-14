@@ -189,7 +189,7 @@
 
                     newValue = self.stripTags( desc );     
 
-                    if (self.options.descLimit !== false) {
+                    if (self.options.descLimit !== false && typeof self.options.descLimit === 'number') {
                         newValue = newValue.length >= self.options.descLimit ? newValue = newValue.substring(0, self.options.descLimit) + '...' : newValue;
                     }
 

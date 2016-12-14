@@ -5,7 +5,7 @@ RSSpond
 The Purpose
 ----
 
-RSSpond was created due to a lack of RSS feed plugins after Google deprecated their API. A number of these plugins relied on the Google API, and there are too few solutions that currently exist. This is a pure Javascript solution with no dependence on jQuery.
+RSSpond was created due to a lack of RSS feed plugins after Google deprecated their API. A number of these plugins relied on the Google API, and there are too few solutions that currently exist. This is a pure Javascript solution with no dependence on jQuery, but currently utilizes the YQL API.
 
 ![alt text](http://i.imgur.com/QZdZUel.png "Screenshot of RSSpond")
 
