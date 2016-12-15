@@ -18,6 +18,7 @@
                 selector: '.js-rsspond',
                 url: '',
                 descLimit: false,
+                descFunc: false,
                 newWindow: true, 
                 logData: false,       
                 maxCount: 5,
@@ -69,7 +70,7 @@
                 }
             };
 
-            if (this.options.url !== '') {
+            if (this.options.url !== '' && this.handler !== null ) {
                 xhr.send();
             }            
         };
@@ -91,8 +92,8 @@
             }
         };
 
-        Rsspond.prototype.stripTags = function ( el ) {
-            return el.replace(/<[^>]*>?/g, '');
+        Rsspond.prototype.stripTags = function ( el ) {            
+            return el.replace(/<(?:.|\n)*?>/gm, '');
         };
 
         Rsspond.prototype.testTemplate = function ( pattern ) {
@@ -187,11 +188,11 @@
                         desc = self.locateString(value);
                     }
 
-                    newValue = self.stripTags( desc );     
+                    newValue = self.stripTags( desc );  
 
-                    if (self.options.descLimit !== false && typeof self.options.descLimit === 'number') {
-                        newValue = newValue.length >= self.options.descLimit ? newValue = newValue.substring(0, self.options.descLimit) + '...' : newValue;
-                    }
+                    if (self.options.descFunc) {
+                        newValue = self.options.descFunc( newValue );
+                    }   
 
                     value = newValue;
                 } else if (typeof value == 'object') {
