@@ -59,7 +59,7 @@ A string format of how you want your info to display with markup. Denote each fi
 
 #### descFunc
 ###### Type: boolean/function
-You can utilize a function here to do additional modifications to the description text. For instance, Wordpress may inject unwanted words or characters that need to be omitted or replaced, or maybe you want to have a character limit implemented. This must return a string value. *(default: false)*.
+Use this to do additional modifications to the description text. For instance, Wordpress may inject unwanted words or characters that need to be omitted or replaced, or maybe you want to have a character limit implemented. This must return a string value. *(default: false)*.
 
 #### logData
 ###### Type: boolean

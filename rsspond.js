@@ -182,11 +182,8 @@
                 }
 
                 if (key == 'description') {
-                    desc = value;
 
-                    if (typeof value !== 'string') {
-                        desc = self.locateString(value);
-                    }
+                    desc = typeof value !== 'string' ? self.locateString(value) : value;
 
                     newValue = self.stripTags( desc );  
 
