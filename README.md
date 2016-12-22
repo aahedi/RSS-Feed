@@ -58,8 +58,8 @@ A string format of how you want the nighttime period to display *(default: pm)*.
 A string format of how you want your info to display with markup. Denote each field with handlebars-like notation, {{key}}.
 
 #### descFunc
-###### Type: boolean/function
-Use this to do additional modifications to the description text. For instance, Wordpress may inject unwanted words or characters that need to be omitted or replaced, or maybe you want to have a character limit implemented. This must return a string value. *(default: false)*.
+###### Type: function
+Use this to do additional modifications to the description text. For instance, Wordpress may inject unwanted words or characters that need to be omitted or replaced, or maybe you want to have a character limit implemented. This must return a string value. *(default: null)*.
 
 #### logData
 ###### Type: boolean

@@ -18,7 +18,7 @@
                 selector: '.js-rsspond',
                 url: '',
                 descLimit: false,
-                descFunc: false,
+                descFunc: null,
                 newWindow: true, 
                 logData: false,       
                 maxCount: 5,
