@@ -12,7 +12,8 @@
 	<script>
 		var feed = new Rsspond({
 			url: 'https://trends.google.com/trends/trendingsearches/daily/rss?geo=ID',
-			dateFormat: 'm dd, YY TT'
+			dateFormat: 'm dd, YY TT',
+			itemTemplate: '<div><h3>{{title}}</h3><h4>{{creator}}</h4><p>{{description}}</p><a href="{{link}}">Read Full Story</a></div>'
 		});
 
 		feed.init();
