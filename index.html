@@ -13,7 +13,8 @@
 		var feed = new Rsspond({
 			url: 'https://trends.google.com/trends/trendingsearches/daily/rss?geo=ID',
 			dateFormat: 'm dd, YY TT',
-			itemTemplate: '<ul><a href="{{link}}"><li>{{title}}</li></a></ul>'
+			maxCount:10,
+			itemTemplate: '<ul><li><a href="{{link}}">{{title}}</a></li></ul>'
 		});
 
 		feed.init();
