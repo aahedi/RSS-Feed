@@ -21,7 +21,7 @@
                 descFunc: null,
                 newWindow: true, 
                 logData: false,       
-                maxCount: 5,
+                maxCount: 15,
                 dateFormat: 'm dd, YY tt',
                 periodDay: 'am',
                 periodNight: 'pm',
